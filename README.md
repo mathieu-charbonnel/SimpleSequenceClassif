@@ -43,7 +43,7 @@ This work utilizes the BERT model, which was introduced by Jacob Devlin, Ming-We
 Reference:
 Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (NAACL-HLT 2019).
 
-We also express our gratitude to the contributors of the Hugging Face Transformers library for providing a user-friendly and efficient implementation of the BERT model.
+I also express my gratitude to the contributors of the Hugging Face Transformers library for providing a user-friendly and efficient implementation of the BERT model.
 
 Reference:
 Hugging Face Transformers Library. Available at: https://github.com/huggingface/transformers
