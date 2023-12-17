@@ -31,12 +31,14 @@ class TinyBERTClassifier(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self,
-                input_ids_sequence,
-                attention_mask_sequence,
+                input_ids,
+                attention_mask,
                 input_categorical):
         # Process sequence input with TinyBERT
-        outputs_sequence = self.tinybert(input_ids=input_ids_sequence,
-                                         attention_mask=attention_mask_sequence)
+        outputs_sequence = self.tinybert(
+            input_ids=input_ids.reshape(-1, 15),
+            attention_mask=attention_mask.reshape(-1, 15)
+        )
         end_logits_sequence = outputs_sequence.end_logits
         x_sequence = self.fc_sequence(end_logits_sequence)
 

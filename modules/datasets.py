@@ -2,9 +2,6 @@ import torch
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from torch.utils.data import Dataset
 import numpy as np
-from transformers import AutoTokenizer
-
-tokenizer = AutoTokenizer.from_pretrained("Intel/dynamic_tinybert")
 
 MAX_SIZE = 15
 ALPHABET = ['A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', \
@@ -52,18 +49,18 @@ class SeqCatDataset(Dataset):
         return features, target
     
 
-class SeqCatBalancedDataset(SeqCatDataset):
+class SeqCatBalancedDataset(Dataset):
     def __init__(self,
                  dataframe,
                  sequence,
-                 seq_encoder,
+                 tokenizer,
                  categories,
                  cat_encoders):
-        super().__init__(dataframe, 
-                         sequence, 
-                         seq_encoder,
-                         categories,
-                         cat_encoders)
+        self.dataframe = dataframe
+        self._sequence = sequence
+        self._tokenizer = tokenizer
+        self._categories = categories
+        self._cat_encoders = cat_encoders
         # Calculate class weights for upsampling
         positive_class_count = (self.dataframe['hit'] == 1).sum()
         negative_class_count = (self.dataframe['hit'] == 0).sum()
@@ -71,22 +68,20 @@ class SeqCatBalancedDataset(SeqCatDataset):
         positive_weight = (1.0 / positive_class_count) * (total_samples / 2.0)
         negative_weight = (1.0 / negative_class_count) * (total_samples / 2.0)
         self.class_weights = torch.Tensor([negative_weight, positive_weight])
-        self.sequences = self.tokenize_sequences(sequence)
 
-    def tokenize_sequences(self, sequence):              
-        sequence_values = list(self.dataframe[sequence].values)
-        tokenized_training_data = tokenizer(
-            sequence_values,
-            return_tensors="pt",
-            truncation=True,
-            padding=True,
-            max_length=MAX_SIZE)
-        return (tokenized_training_data["input_ids"].to(device))    
+    def __len__(self):
+        return len(self.dataframe)
 
     def __getitem__(self, idx):
-
         # Get encoded features
-        sequence_enc = self.sequences[idx]
+        sequence_values = self.dataframe[self._sequence].values[idx]
+        tokens = self._tokenizer(
+            sequence_values,
+            return_tensors="pt",
+            padding='max_length',
+            max_length=MAX_SIZE)
+        sequence_enc = (tokens["input_ids"].to(device)) 
+        masks = (tokens["attention_mask"].to(device))
 
         cat_encodings = []
         for category, encoder in zip(self._categories, self._cat_encoders):
@@ -102,12 +97,13 @@ class SeqCatBalancedDataset(SeqCatDataset):
         target = self.dataframe['hit'].values[idx].reshape(1, 1)
 
         # Convert target to PyTorch tensor
-        target = torch.Tensor(target).float()
+        target = torch.Tensor(target).float().to(device)
 
-        return sequence_enc, cat_features, target
+        return sequence_enc, masks, cat_features, target
 
     def get_weights(self):
       return self.class_weights
+
 
 def sample_weights(dataset):
     cls_weights = dataset.get_weights()
