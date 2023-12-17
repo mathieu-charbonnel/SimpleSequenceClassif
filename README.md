@@ -10,18 +10,18 @@ Feel free to use it on data that has similar features, as only the preprocessing
 ## Getting Started
 ### Dependencies
 cuda-libraries=11.8.0
-imbalanced-learn=0.11.0
-jupyter_core=5.5.0
-matplotlib=3.8.0
-numpy=1.26.2
-pandas=2.1.1
-python=3.11.6
-pytorch=2.1.1
-pytorch-cuda=11.8
-scikit-learn=1.3.2
-transformers=4.32.1
+imbalanced-learn=0.11.0 \
+jupyter_core=5.5.0 \
+matplotlib=3.8.0 \
+numpy=1.26.2 \
+pandas=2.1.1 \
+python=3.11.6 \
+pytorch=2.1.1 \
+pytorch-cuda=11.8 \
+scikit-learn=1.3.2 \
+transformers=4.32.1 \
 ### Installing
-cd SimpleSequenceClassif
+cd SimpleSequenceClassif \
 conda create --name {env} --file requirements.txt
 ### Executing program
 Simply run notebooks cells.
@@ -31,11 +31,11 @@ Please reach out.
 Mathieu Charbonnel
 ## Version History
 
-* 0.1: December 2023
+* December 2023
     * Initial Release
 
 ## License
-This project is not licensed
+This project is not licensed.
 
 ## Acknowledgments
 This work utilizes the BERT model, which was introduced by Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova in the paper "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding," published in Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies.
