@@ -19,7 +19,7 @@ python=3.11.6 \
 pytorch=2.1.1 \
 pytorch-cuda=11.8 \
 scikit-learn=1.3.2 \
-transformers=4.32.1 \
+transformers=4.32.1
 ### Installing
 cd SimpleSequenceClassif \
 conda create --name {env} --file requirements.txt
