@@ -9,6 +9,22 @@ ALPHABET = ['A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', \
 
 
 class SeqCatDataset(Dataset):
+    """
+    PyTorch Dataset for a sequence categorization task.
+
+    Args:
+    - dataframe (pd.DataFrame): The input DataFrame
+    - sequence (str): The column name representing the sequence data
+    - seq_encoder (function): A function for encoding sequence data
+    - categories (list): A list of column names representing 
+      categorical features
+    - cat_encoders (list): A list of encoders for categorical features
+
+    Methods:
+    - __len__(): Returns the number of samples in the dataset.
+    - __getitem__(idx): Retrieves the data at the specified index.
+    """
+
     def __init__(self,
                  dataframe,
                  sequence,
@@ -22,10 +38,25 @@ class SeqCatDataset(Dataset):
         self._cat_encoders = cat_encoders
 
     def __len__(self):
+        """
+        Returns the number of samples in the dataset.
+
+        Returns:
+        - int: The number of samples in the dataset.
+        """
         return len(self.dataframe)
 
     def __getitem__(self, idx):
+        """
+        Retrieves and processes the data at the specified index.
 
+        Args:
+        - idx (int): The index of the sample to retrieve.
+
+        Returns:
+        - Tuple[torch.Tensor, torch.Tensor]: A tuple containing the input 
+          features and target for the given index.
+        """
         # Get encoded features
         sequence_enc = self._seq_encoder(
             self.dataframe[self._sequence].values[idx], ALPHABET, MAX_SIZE)
@@ -47,9 +78,31 @@ class SeqCatDataset(Dataset):
         target = torch.Tensor(target).float()
 
         return features, target
-    
 
 class SeqCatBalancedDataset(Dataset):
+    """
+    PyTorch Dataset for a sequence classification task with class 
+    balancing
+
+    Args:
+    - dataframe (pd.DataFrame): The input DataFrame
+    - sequence (str): The column name representing the sequence data
+    - tokenizer: The tokenizer for encoding sequence data.
+    - categories (list): A list of column names representing 
+      categorical features
+    - cat_encoders (list): A list of encoders corresponding to the
+      categorical features.
+
+    Attributes:
+    - class_weights (torch.Tensor): Class weights for upsampling to 
+      balance classes.
+
+    Methods:
+    - __len__(): Returns the number of samples in the dataset.
+    - __getitem__(idx): Retrieves and processes the data at the specified index.
+    - get_weights(): Returns the class weights used for upsampling.
+    """
+
     def __init__(self,
                  dataframe,
                  sequence,
@@ -61,6 +114,7 @@ class SeqCatBalancedDataset(Dataset):
         self._tokenizer = tokenizer
         self._categories = categories
         self._cat_encoders = cat_encoders
+
         # Calculate class weights for upsampling
         positive_class_count = (self.dataframe['hit'] == 1).sum()
         negative_class_count = (self.dataframe['hit'] == 0).sum()
@@ -70,9 +124,26 @@ class SeqCatBalancedDataset(Dataset):
         self.class_weights = torch.Tensor([negative_weight, positive_weight])
 
     def __len__(self):
+        """
+        Returns the number of samples in the dataset.
+
+        Returns:
+        - int: The number of samples in the dataset.
+        """
         return len(self.dataframe)
 
     def __getitem__(self, idx):
+        """
+        Retrieves and processes the data at the specified index.
+
+        Args:
+        - idx (int): The index of the sample to retrieve.
+
+        Returns:
+        - Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+          A tuple containing the input features (sequence, attention masks,
+          categorical features) and target for the given index.
+        """
         # Get encoded features
         sequence_values = self.dataframe[self._sequence].values[idx]
         tokens = self._tokenizer(
@@ -102,10 +173,28 @@ class SeqCatBalancedDataset(Dataset):
         return sequence_enc, masks, cat_features, target
 
     def get_weights(self):
-      return self.class_weights
+        """
+        Returns the class weights used for upsampling.
+
+        Returns:
+        - torch.Tensor: Class weights for upsampling.
+        """
+        return self.class_weights
 
 
 def sample_weights(dataset):
+    """
+    Generate sample weights based on class weights for the given
+    dataset.
+
+    Args:
+    - dataset (SeqCatBalancedDataset): The dataset for which sample 
+      weights are generated.
+
+    Returns:
+    - list: A list of sample weights corresponding to each sample in
+      the dataset.
+    """
     cls_weights = dataset.get_weights()
     sample_weights = [
         cls_weights[0] if hit == 0 else cls_weights[1]

@@ -4,8 +4,23 @@ from transformers import AutoModelForQuestionAnswering
 tiny_bert = AutoModelForQuestionAnswering.from_pretrained("Intel/dynamic_tinybert")
 MAX_SIZE = 15
 
-# Define a simple neural network model
 class SimpleClassifier(nn.Module):
+    """
+    A simple feedforward neural network for binary classification.
+
+    Args:
+    - input_dim (int): Dimensionality of the input features.
+    - hidden_dim (int): Dimensionality of the hidden layer.
+
+    Attributes:
+    - fc1 (nn.Linear): The first fully connected layer.
+    - fc2 (nn.Linear): The second fully connected layer.
+    - sigmoid (nn.Sigmoid): Sigmoid activation function.
+
+    Methods:
+    - forward(x): Forward pass of the classifier.
+    """
+
     def __init__(self, input_dim, hidden_dim):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
@@ -13,13 +28,43 @@ class SimpleClassifier(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
+        """
+        Forward pass of the classifier.
+
+        Args:
+        - x (torch.Tensor): Input features.
+
+        Returns:
+        - torch.Tensor: The output of the classifier after the sigmoid activation.
+        """
         x = self.fc1(x)
         x = self.fc2(x)
         x = self.sigmoid(x)
         return x
-    
-# Define a model with two input features: sequence and categorical
+
 class TinyBERTClassifier(nn.Module):
+    """
+    A classifier model that combines TinyBERT-based sequence processing
+    with categorical feature processing for binary classification.
+
+    Args:
+    - hidden_dim (int): Dimensionality of the hidden layers.
+    - num_categories (int): Number of categories in the categorical input.
+
+    Attributes:
+    - hidden_dim (int): Dimensionality of the hidden layers.
+    - tinybert (nn.Module): TinyBERT model for sequence processing.
+    - fc_sequence (nn.Linear): Fully connected layer for sequence features.
+    - fc_categorical (nn.Linear): Fully connected layer for categorical features.
+    - relu (nn.ReLU): Rectified Linear Unit activation function.
+    - fc_combined (nn.Linear): Fully connected layer for combined features.
+    - sigmoid (nn.Sigmoid): Sigmoid activation function.
+
+    Methods:
+    - forward(input_ids, attention_mask, input_categorical):
+      Forward pass of the classifier.
+    """
+
     def __init__(self, hidden_dim, num_categories):
         super().__init__()
         self.hidden_dim = hidden_dim
@@ -34,6 +79,19 @@ class TinyBERTClassifier(nn.Module):
                 input_ids,
                 attention_mask,
                 input_categorical):
+        """
+        Forward pass of the classifier.
+
+        Args:
+        - input_ids (torch.Tensor): Input sequence IDs
+        - attention_mask (torch.Tensor): Attention mask for sequence 
+          input
+        - input_categorical (torch.Tensor): Input categorical features
+
+        Returns:
+        - torch.Tensor: The output of the classifier after the sigmoid
+          activation
+        """
         # Process sequence input with TinyBERT
         outputs_sequence = self.tinybert(
             input_ids=input_ids.reshape(-1, 15),
