@@ -149,6 +149,7 @@ class SeqCatBalancedDataset(Dataset):
         tokens = self._tokenizer(
             sequence_values,
             return_tensors="pt",
+            truncation=True,
             padding='max_length',
             max_length=MAX_SIZE)
         sequence_enc = (tokens["input_ids"].to(device)) 
