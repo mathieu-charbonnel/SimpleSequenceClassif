@@ -3,6 +3,8 @@ name = "simple-sequence-classif"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
+    "ipykernel>=7.2.0",
+    "matplotlib",
     "numpy",
     "pandas",
     "scikit-learn",
